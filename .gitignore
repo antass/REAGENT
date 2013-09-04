@@ -1,2 +1,5 @@
 aracne/data/
 aracne/figures/
+.Rhistory
+.history
+.workspace
