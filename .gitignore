@@ -3,3 +3,6 @@ aracne/figures/
 .Rhistory
 .history
 .workspace
+*workspace
+*history
+*Rhistory
