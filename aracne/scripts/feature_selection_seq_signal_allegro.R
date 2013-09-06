@@ -1,13 +1,11 @@
 library(limma, lib.loc="~/R/x86_64-unknown-linux-gnu-library/")
 
 setwd("~/Meta_Analysis/kyoto/aracne/data/")
+load("~/Meta_Analysis/kyoto/aracne/data/exp_common_genes_all_air_lam_grt_lgv_8239g.rda")  # all.exp.common ...
 
-# ### AIRWAY
+annotation <- all.ann
+expression <- all.exp.common
 
-lnames <- load("~/Meta_Analysis/data/processed/input/clean/Allegro16_annotation_expression_clean_ComBat_859.rda")  # annotation expression
-
-# annot.base <- annotation[ annotation$race %in% c("Caucasian", "African American"), ]
-# annot.base$race <- droplevels(annot.base$race)
 annot.base <- annotation
 data.0 <- expression[, as.character(annot.base$filename)]
 data.0 <- data.0[, match(annot.base$filename, colnames(data.0))]
@@ -41,4 +39,6 @@ res <- c()
 res <- topTable(fit.0, coef="cancerno cancer", adjust.method="fdr", p.value=0.05, number=nrow(data.0))
 # number of sig genes
 cat(paste0(var, ": ", nrow(res), " / ", nrow(mydata.0), ifelse(nrow(res)>nrow(mydata.0)*0.05, " DE genes (significant; ", " DE genes (not significant; "), nrow(mydata.0)*0.05, " expected by chance)\n"))
-write.csv(res, paste0("feature_selection_limma_smoke_sex_cancer_anova_allegro.csv"))
+write.csv(res, paste0("feature_selection_limma_smoke_sex_cancer_anova_seq_signal_allegro.csv"))
+
+write.table(res$ID, file=paste0("allegro_feature_selection_genes_", nrow(res), "g.txt"), row.names=FALSE, quote=FALSE)
