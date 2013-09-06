@@ -1,15 +1,10 @@
 library(limma, lib.loc="~/R/x86_64-unknown-linux-gnu-library/")
 
-setwd("~/Meta_Analysis/kyoto/aracne/data/")
+load("~/Meta_Analysis/kyoto/aracne/data/exp_common_genes_all_air_lam_grt_lgv_8239g.rda")  # all.exp.common ...
 
-# ### AIRWAY
+annotation <- lam.ann
+expression <- lam.exp.common
 
-lnames <- load("~/Meta_Analysis/data/processed/input/clean/Lam238_annotation_premalignancy_exprRMA_exprSCAN_clean_226.rda")  # annotation expression
-annotation <- ann.premal
-expression <- expr.rma
-
-# annot.base <- annotation[ annotation$race %in% c("Caucasian", "African American"), ]
-# annot.base$race <- droplevels(annot.base$race)
 annot.base <- annotation
 annot.base$copd_status <- as.character(annot.base$copd_status)
 annot.base$copd_status[annot.base$copd_status=="no"] <- "no COPD"
@@ -27,21 +22,21 @@ copd<-as.factor(annot.base$copd_status)
 dys <- as.factor(annot.base$DYSGR_CAT)
 dys <- as.character(dys)
 dys[dys %in% c("CarcinomaOther", "NoData", "Unsatis")] <- "Other"
-
+# dys[dys %in% c("Hyperplasia")] <- "Normal"
+dys[dys %in% c("Hyperplasia", "Metaplasia")] <- "Normal"
 # if not using all levels (2 levels: normal / abnormal)
 dys[!(dys %in% c("Normal", "Other"))] <- "Dysplasia"
-
 dys <- as.factor(dys)
 
-mes <- data.0[, !is.na(copd) & !is.na(sex) & !is.na(smoke) & dys!="Other"]
-copd2 <- copd[!is.na(copd) & !is.na(sex) & !is.na(smoke) & dys!="Other"]
-sex2 <- sex[!is.na(copd) & !is.na(sex) & !is.na(smoke) & dys!="Other"]
-smoke2<- smoke[!is.na(copd) & !is.na(sex) & !is.na(smoke) & dys!="Other"]
-dys2<- dys[!is.na(copd) & !is.na(sex) & !is.na(smoke) & dys!="Other"]
+mes <- data.0[, !is.na(copd) & !is.na(sex) & !is.na(smoke) & (dys!="Other")]
+copd2 <- copd[!is.na(copd) & !is.na(sex) & !is.na(smoke)& (dys!="Other")]
+sex2 <- sex[!is.na(copd) & !is.na(sex) & !is.na(smoke)& (dys!="Other")]
+smoke2<- smoke[!is.na(copd) & !is.na(sex) & !is.na(smoke)& (dys!="Other")]
+dys2<- dys[!is.na(copd) & !is.na(sex) & !is.na(smoke)& (dys!="Other")]
 
 
 d<-c()
-d<-annot.base[!is.na(copd) & !is.na(sex) & !is.na(smoke) & dys!="Other", ]
+d<-annot.base[!is.na(copd) & !is.na(sex) & !is.na(smoke)& (dys!="Other"), ]
 
 sex <- sex2
 smoke <- droplevels(smoke2)
@@ -61,4 +56,6 @@ res <- c()
 res <- topTable(fit.0, coef="dysNormal", adjust.method="fdr", p.value=0.05, number=nrow(data.0))
 # number of sig genes
 cat(paste0(var, ": ", nrow(res), " / ", nrow(mydata.0), ifelse(nrow(res)>nrow(mydata.0)*0.05, " DE genes (significant; ", " DE genes (not significant; "), nrow(mydata.0)*0.05, " expected by chance)\n"))
-write.csv(res, paste0("feature_selection_limma_smoke_sex_copd_dysgr_anova_lam.csv"))
+write.csv(res, paste0("feature_selection_limma_smoke_sex_copd_dysgr_anova_seq_signal_", nrow(res), "_lam.csv"))
+
+write.table(res$ID, file=paste0("feature_selection_genes_", nrow(res), "g_lam.txt"), row.names=FALSE, quote=FALSE)
